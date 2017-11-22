@@ -1,5 +1,32 @@
 # cw项目开发规范
 
+## 目录
+
+- [**NodeJs**](#nodejs)
+- [**开发工具**](#开发工具)
+- [**项目初始化**](#项目初始化)
+- [**调试**](#调试)
+- [**一些代码规范风格**](#一些代码规范风格)
+- [**性能相关**](#性能相关)
+- [**git版本分支**](#git版本分支)
+- [**git提交代码**](#git提交代码)
+- [**框架相关简介**](#框架相关简介)
+- [**环境变量**](#环境变量)
+- [**组件**](#组件)
+- [**单元测试**](#单元测试)
+- [**代码覆盖率**](#代码覆盖率)
+
+## NodeJs
+------
+- [NodeJs](https://nodejs.org/en/)版本变化比较快，建议使用LTS版本（现在为8.*），详情请参考[LTS Schedule](https://github.com/nodejs/Release#release-schedule)
+- nodejs和npm的仓库托管在S3上，在国内访问十分困难，这里可以用[淘宝的镜像](npm.taobao.org)站代替
+
+```
+npm config set registry https://registry.npm.taobao.org
+```
+
+- [npm](https://www.npmjs.com/)主页：https://www.npmjs.com/  ，判断一个包的好坏可简单通过下载数量和github star数
+
 ## 开发工具
 ------
 - 安装vscode
@@ -8,20 +35,24 @@
 
 - 安装语法检查插件 ESLint
 
-- tab配置制表符大小为2, 并将缩进转换为tab制表符
+- 安装 EditorConfig插件,把[.editorconfig](./.editorconfig)拷贝到项目根目录
+
+- tab配置制表符大小为2, 并将缩进转换为tab制表符（可通过EditorConfig插件控制）
 ```javascript
 // 在用户设置默认
 { "editor.tabSize": 2 }
 ```
 
-- 换行, linux 默认 LF, windows 默认 CRLF, 在windows下也设置为LF, 与linux兼容
+- 换行, linux 默认 LF, windows 默认 CRLF, 在windows下也设置为LF, 与linux兼容（可通过EditorConfig插件控制）
 ```javascript
 // 在用户设置默认
 // 默认行尾字符。使用 \n 表示 LF，\r\n 表示 CRLF。
 { "files.eol": "\n"}
 ```
 
-## 项目初始化([cw-init工具](https://www.npmjs.com/package/cw-init))
+## 项目初始化
+
+([cw-init工具](https://www.npmjs.com/package/cw-init))
 ------
 
 - 安装工具
@@ -49,7 +80,11 @@ $ npm run lint # 检查语法
 ------
 vscode开发环境下, 按f5
 
-## 一些代码规范风格 [es6](http://es6.ruanyifeng.com/#docs/style)
+## 一些代码规范风格
+
+参照 [es6](http://es6.ruanyifeng.com/#docs/style)
+
+### 强烈建议通看一遍[es6](http://es6.ruanyifeng.com), 以下的规范大都参照es6
 ------
 - 使用tab缩进, 设置制表符大小为2
 
@@ -148,6 +183,18 @@ function handleThings(opts = {}) {
 
 - import/export, 目前cw-egg框架未支持此语法特性
 
+- 命名规范
+
+避免单字母命名。命名应具备描述性
+
+使用驼峰式命名对象、函数和实例
+
+函数驼峰式, 首字母小写, 私有函数可以简单使用下划线_作为前缀区分
+
+属性字段驼峰式, 首字母小写, 私有字段可以简单使用下划线_作为前缀区分
+
+class类名采用驼峰式, 首字母大写
+
 - 安装格式化工具 js-beautify for VS Code
 
 - [ESLint](https://eslint.org/)
@@ -187,6 +234,45 @@ npm install --save-dev eslint-config-airbnb-base eslint-plugin-import
 eslint index.js
 ```
 
+## 性能相关
+------
+
+- 尽量避免使用全局变量
+
+```javascript
+// cache为全局变量
+global.cache
+```
+
+- 对于复杂的回调函数, 建议抽取出来, 定义在外部
+
+```javascript
+fs.read(function(err, data){...});
+// ==>
+const f1 = function(err, data){...};
+fs.read(f1);
+```
+
+- for/forEach里面的定义的函数, 要抽取出来, 定义在外部
+
+```javascript
+// 这里的函数f1, 要抽取出来定义在外部, 否则在大循环/高并非, 容易导致内存占用高和泄露 
+// bad
+arr.forEach(function(){
+  const f1 = function(...){ ... };
+  ...
+  f1();
+})
+
+// ==>
+// good
+const f1 = function(...){ ... };
+...
+arr.forEach(function(){
+  f1();
+})
+```
+
 ## git版本分支
 ------
 
@@ -213,7 +299,7 @@ npm run lint
 
 在应用上层, 有需求的话, 框架都可以用typescript/javascript
 
-## 环境变量 NODE_ENV 
+## 环境变量 
 ------
 - NODE_ENV
 
@@ -229,7 +315,10 @@ npm run lint
 - 数据校验 [joi](https://github.com/hapijs/joi)
 
 
-## 单元测试[cw-egg]
+## 单元测试
+
+[cw-egg]
+------
 ### 对于一些关键代码最好附加上单元测试
 ------
 
@@ -271,7 +360,9 @@ $ npm test -- -t 30000 --grep="should GET"
 
 - 执行顺序。每个用例(describe)会按 before -> beforeEach -> it -> afterEach -> after 的顺序执行，而且可以定义多个
 
-##  代码覆盖率[cw-egg]
+## 代码覆盖率
+
+[cw-egg]
 ------
 - egg-bin 已经内置了 [nyc](https://github.com/istanbuljs/nyc) 来支持单元测试自动生成代码覆盖率报告
 ```bash
