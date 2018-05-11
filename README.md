@@ -18,7 +18,7 @@
 
 ## NodeJs
 ------
-- [NodeJs](https://nodejs.org/en/)版本变化比较快，建议使用LTS版本（现在为8.*），详情请参考[LTS Schedule](https://github.com/nodejs/Release#release-schedule)
+- [NodeJs](https://nodejs.org/en/)版本变化比较快，建议使用LTS版本（现在为8.9.*），详情请参考[LTS Schedule](https://github.com/nodejs/Release#release-schedule)
 - nodejs和npm的仓库托管在S3上，在国内访问十分困难，这里可以用[淘宝的镜像](npm.taobao.org)站代替
 
 ```
